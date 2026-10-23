@@ -162,8 +162,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        // ✅ 把 5500 和 127.0.0.1 都加进去
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:4200"   // ← 加入這行！
+            "http://localhost:4200",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500" 
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
