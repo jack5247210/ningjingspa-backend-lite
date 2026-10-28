@@ -2,6 +2,10 @@
 FROM gradle:jdk21 AS build
 WORKDIR /app
 COPY . .
+
+# ✅ 新增這行：給予 gradlew 執行權限
+RUN chmod +x gradlew
+
 # 跳過測試加速編譯
 RUN ./gradlew build -x test
 
