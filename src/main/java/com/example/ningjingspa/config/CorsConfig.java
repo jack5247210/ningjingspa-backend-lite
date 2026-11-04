@@ -9,13 +9,13 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-    	registry.addMapping("/**")
-        .allowedOrigins(
-            "http://localhost:4200", 
-            "https://你的vercel專案網址.vercel.app" // 👈 把這裡換成你 Vercel 給的網址
-        )
-        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        .allowedHeaders("*")
-        .allowCredentials(true);
+        registry.addMapping("/**")
+            .allowedOrigins(
+                "http://localhost:4200", 
+                "https://6adad1cb00454f0301e3b164--ningjingspa.netlify.app" // 👈 換成你的 Netlify 網址了！
+            )
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedHeaders("*")
+            .allowCredentials(true);
     }
 }
