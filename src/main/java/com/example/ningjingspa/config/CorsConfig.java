@@ -10,11 +10,10 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins(
-                "http://localhost:4200", 
-                "https://ningjing-spa-1ys6.vercel.app",
-                "https://ningjing-spa-1ys6-git-main-wei-95e9.vercel.app",
-                "https://ningjing-spa-1ys6-aql9add6d-wei-95e9.vercel.app"
+            // ✅ 改用 allowedOriginPatterns，並使用萬用字元
+            .allowedOriginPatterns(
+                "http://localhost:4200",
+                "https://*.vercel.app" // 👈 這行代表允許所有 Vercel 網址
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
