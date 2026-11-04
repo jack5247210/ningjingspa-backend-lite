@@ -12,7 +12,9 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOrigins(
                 "http://localhost:4200", 
-                "https://6adad1cb00454f0301e3b164--ningjingspa.netlify.app" // 👈 換成你的 Netlify 網址了！
+                "https://ningjing-spa-1ys6.vercel.app",
+                "https://ningjing-spa-1ys6-git-main-wei-95e9.vercel.app",
+                "https://ningjing-spa-1ys6-aql9add6d-wei-95e9.vercel.app"
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
