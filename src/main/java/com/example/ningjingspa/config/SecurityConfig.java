@@ -29,7 +29,7 @@ import java.util.Date;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)   // 必须加这一行！
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -64,20 +64,20 @@ public class SecurityConfig {
             	    ).permitAll()
             	    // 2. 放行所有公开 API（登录、注册、查看文章/产品等）
             	    .requestMatchers(
-            	        "/api/auth/**",                // 登录、注册、登出
-            	        "/api/articles",               // GET 文章列表
-            	        "/api/articles/*",             // GET 单篇文章
-            	        "/api/articles/latest",        // 最新文章
-            	        "/api/articles/categories",    // 文章分类
-            	        "/api/comments/article/*",     // 查看文章评论
-            	        "/api/products",               // GET 产品列表
-            	        "/api/products/*",             // GET 单个产品
-            	        "/api/oil-shop/oils",          // 精油列表
-            	        "/api/oil-shop/oils/*",        // 单个精油
-            	        "/api/appointments/holidays",               // 公休日列表
-            	        "/api/appointments/availability", // 预约名额查询
-            	        "/api/auth/change-password",//修改密碼
-            	        "/error",                       // 错误页面
+            	        "/api/auth/**",
+            	        "/api/articles",
+            	        "/api/articles/*",
+            	        "/api/articles/latest",
+            	        "/api/articles/categories",
+            	        "/api/comments/article/*",
+            	        "/api/products",
+            	        "/api/products/*",
+            	        "/api/oil-shop/oils",
+            	        "/api/oil-shop/oils/*",
+            	        "/api/appointments/holidays",
+            	        "/api/appointments/availability",
+            	        "/api/auth/change-password",
+            	        "/error",
             	        "/webhook"
             	    ).permitAll()
             	    // 3. 管理員 API（需要 ADMIN 权限）
@@ -85,14 +85,13 @@ public class SecurityConfig {
             	        "/api/admin/**",
             	        "/api/appointments/admin/**",
             	        "/api/holidays/admin/**",
-            	        "/api/products",               // POST 新增产品
-            	        "/api/products/*",             // PUT/DELETE 操作（会被方法层 @PreAuthorize 二次保护）
+            	        "/api/products",
+            	        "/api/products/*",
             	        "/api/products/*/toggle-visibility",
-            	        "/api/articles",               // POST 新增文章
-            	        "/api/articles/*"             // PUT/DELETE 操作
-
+            	        "/api/articles",
+            	        "/api/articles/*"
             	    ).hasAuthority("ADMIN")
-            	    // 4. 其他请求（如用户自己的预约、下单等）需要认证
+            	    // 4. 其他请求需要认证
             	    .anyRequest().permitAll()
             	)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -106,10 +105,8 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                 .successHandler((request, response, authentication) -> {
-                    // ========== 补全的成功处理器 ==========
                     System.out.println(">>> OAuth2 successHandler 被呼叫！");
 
-                    // 1. 正确提取 email
                     String email = null;
                     Object principal = authentication.getPrincipal();
                     if (principal instanceof OAuth2User) {
@@ -119,12 +116,9 @@ public class SecurityConfig {
                     if (email == null) {
                         email = authentication.getName();
                     }
-                    System.out.println("取得的 email: " + email);
 
-                    // 2. 查找使用者
                     User user = userDao.getByEmail(email);
                     if (user == null) {
-                        System.out.println("错误：使用者不存在于资料库！");
                         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "使用者不存在");
                         return;
                     }
@@ -133,7 +127,6 @@ public class SecurityConfig {
                     Boolean isAdmin = user.getIsAdmin() != null ? user.getIsAdmin() : false;
                     String userName = user.getName();
 
-                    // 3. 生成 JWT Token
                     SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
                     String jwtToken = Jwts.builder()
                             .setSubject(email)
@@ -145,13 +138,8 @@ public class SecurityConfig {
                             .signWith(key)
                             .compact();
 
-                    // 4. 重定向到前端（自動判斷來源：localhost 或 ngrok）
-                    String origin = request.getHeader("Origin");
-                    String referer = request.getHeader("Referer");
-                    String baseUrl = "http://localhost:4200";
-
-                    String frontendUrl = baseUrl + "/login-success?token=" + jwtToken;
-                    System.out.println("即将重定向到: " + frontendUrl);
+                    // 注意：這裡如果你是部署到 Vercel，登入成功後跳轉的網址可能需要改成你的 Vercel 網址
+                    String frontendUrl = "http://localhost:4200/login-success?token=" + jwtToken;
                     response.sendRedirect(frontendUrl);
                 })
             );
@@ -162,11 +150,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // ✅ 把 5500 和 127.0.0.1 都加进去
-        configuration.setAllowedOrigins(Arrays.asList(
+        // ✅ 關鍵修改：使用 setAllowedOriginPatterns 允許所有 Vercel 網址
+        configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:4200",
             "http://localhost:5500",
-            "http://127.0.0.1:5500" 
+            "http://127.0.0.1:5500",
+            "https://*.vercel.app" // 👈 加入了這行！
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
